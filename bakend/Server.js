@@ -1,9 +1,9 @@
-const DATABASE_URL=postgres="postgres://postgres:Lokeshnuli@1612@localhost:6969/Railway_DB";
-const JWT_SECRET= "a4a478f363cfdb33038b95626373a70a1bd8aa36fc97b183285da4b81dc3af9c";
-const ADMIN_API_KEY= "501543cd6fad8b2f8e10420fb3d36392";
+const DATABASE_URL = "postgres://postgres:Lokeshnuli@1612@localhost:6969/Railway_DB";
+const JWT_SECRET = "a4a478f363cfdb33038b95626373a70a1bd8aa36fc97b183285da4b81dc3af9c";
+const ADMIN_API_KEY = "501543cd6fad8b2f8e10420fb3d36392";
 const express = require('express');
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
+const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 // require('dotenv').config();
 
@@ -39,7 +39,7 @@ const authenticateAdmin = (req, res, next) => {
 // 🔹 User Registration
 app.post('/register', async (req, res) => {
   const { username, password, role } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await argon2.hash(password); // 🔹 Argon2 hashing
   await pool.query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', [username, hashedPassword, role || 'user']);
   res.status(201).json({ message: 'User registered' });
 });
@@ -50,7 +50,7 @@ app.post('/login', async (req, res) => {
   const user = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   if (user.rows.length === 0) return res.status(401).json({ message: 'Invalid credentials' });
 
-  const validPassword = await bcrypt.compare(password, user.rows[0].password);
+  const validPassword = await argon2.verify(user.rows[0].password, password); // 🔹 Argon2 verification
   if (!validPassword) return res.status(401).json({ message: 'Invalid credentials' });
 
   const token = jwt.sign({ id: user.rows[0].id, role: user.rows[0].role }, SECRET_KEY, { expiresIn: '1h' });
@@ -120,13 +120,6 @@ app.post('/book', authenticateUser, async (req, res) => {
   }
 });
 
-// 🔹 Get Specific Booking Details
-// app.get('/booking/:id', authenticateUser, async (req, res) => {
-//   const booking = await pool.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
-//   if (booking.rows.length === 0) return res.status(404).json({ message: 'Booking not found' });
-//   res.json(booking.rows[0]);
-// });
-
 // 🔹 Get Specific Booking Details with Train Info
 app.get('/booking/:id', authenticateUser, async (req, res) => {
   try {
@@ -154,7 +147,6 @@ app.get('/booking/:id', authenticateUser, async (req, res) => {
   }
 });
 
-
 // 🔹 Test Database Connection
 app.get("/test-db", async (req, res) => {
   try {
@@ -166,9 +158,4 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-
-
 app.listen(3000, () => console.log('🚀 Server running on port 3000'));
-
-
-// ee file run chesi chudu post ,an lo
