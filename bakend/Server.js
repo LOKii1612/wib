@@ -1,4 +1,4 @@
-const DATABASE_URL = "postgres://postgres:Lokeshnuli@1612@localhost:6969/Railway_DB";
+const DATABASE_URL ="postgresql://railway_db_user:FZZezaVDm3xEbmDhe66HnmMLx5fCcJvj@dpg-cuj4152n91rc738341sg-a/railway_db";
 const JWT_SECRET = "a4a478f363cfdb33038b95626373a70a1bd8aa36fc97b183285da4b81dc3af9c";
 const ADMIN_API_KEY = "501543cd6fad8b2f8e10420fb3d36392";
 const express = require('express');
